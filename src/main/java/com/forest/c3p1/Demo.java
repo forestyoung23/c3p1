@@ -1,8 +1,10 @@
 package com.forest.c3p1;
 
+import com.forest.c3p1.pool.PoolDataSource;
+
 import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -11,10 +13,22 @@ import java.sql.SQLException;
  */
 public class Demo {
     public static void main(String[] args) throws SQLException {
-        String url = "jdbc:mysql://47.119.31.234:3316/campus_imaotai";
-        String userName = "imaotai";
-        String password = "PZrGWTDPPxneMrnT";
-        Connection connection = DriverManager.getConnection(url, userName, password);
-        System.err.println(connection);
+        for (int i = 0; i < 100; i++) {
+            test();
+        }
+    }
+
+    private static void test() throws SQLException {
+        Connection connection = PoolDataSource.getConnection();
+        System.err.println("获取连接:" + connection.hashCode());
+        PreparedStatement statement = connection.prepareStatement("select * from i_item where item_code = 10941");
+        ResultSet rs = statement.executeQuery();
+        while (rs.next()) {
+            String content = rs.getString("content");
+            System.err.println(content);
+        }
+        rs.close();
+        statement.close();
+        PoolDataSource.releaseConnection(connection);
     }
 }
